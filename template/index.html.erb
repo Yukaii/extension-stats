@@ -1,0 +1,13 @@
+<html>
+  <head>
+    <title>VSCode vs Sublime vs Atom packages count</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+  </head>
+  <script>
+    var stats = {
+      "vscode": <%= @stats[:vscode] %>,
+      "sublime": <%= @stats[:sublime] %>,
+      "atom": <%= @stats[:atom] %>
+    }
+  </script>
+</html>

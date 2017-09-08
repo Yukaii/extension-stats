@@ -1,0 +1,127 @@
+#! /usr/bin/env ruby
+
+require 'nokogiri'
+require 'faraday'
+require 'net/http'
+require 'uri'
+require 'json'
+require 'erb'
+
+# Sublime
+body = Faraday.new('https://packagecontrol.io/stats').get().body
+doc = Nokogiri::HTML(body)
+num_str = doc.css('#content > section.packages > div.total > div.main > span.number')
+sublime = num_str.text.gsub(/[^\d]/, '').to_i
+
+# VSCode
+# Use https://jhawthorn.github.io/curl-to-ruby/ for coverting curl command
+uri = URI.parse("https://marketplace.visualstudio.com/_apis/public/gallery/extensionquery")
+request = Net::HTTP::Post.new(uri)
+request.content_type = "application/json"
+request["Cookie"] = "MSFPC=ID=f2eb5edc257fed4ba8c71d1cc1f83226&CS=1&LV=201709&V=1; VstsSession={\"PersistentSessionId\":\"bebc41ea-05fc-43b8-9dea-954070c5a051\",\"PendingAuthenticationSessionId\":\"00000000-0000-0000-0000-000000000000\",\"CurrentAuthenticationSessionId\":\"00000000-0000-0000-0000-000000000000\"}; __RequestVerificationToken=Akrt_w00u3l6hmEUeC7Qbcoib6NsdeqDM0MSp-X3DZWRmtA62W7JTDIwBDkCXdBReiUwVViJ59WmefZrki39TCFq0yy1u_1R-f-ssKm-HuuO26WloPzW6KxhJf8_CTKwuOHUjA2; __RequestVerificationToken2e3d68f5d-6a7c-4fc3-b598-e5e3b4642d91=Akrt_w00u3l6hmEUeC7Qbcoib6NsdeqDM0MSp-X3DZWRmtA62W7JTDIwBDkCXdBReiUwVViJ59WmefZrki39TCFq0yy1u_1R-f-ssKm-HuuO26WloPzW6KxhJf8_CTKwuOHUjA2; icxid=1504829527122-8838853040016166; Market_SelectedTab=vscode; _gat_UA-62780441-6=1; _gat=1; MC0=1504829973949; _ga=GA1.2.1231677231.1504829529; _gid=GA1.2.1593827196.1504829529; Gallery-Service-UserIdentifier=f1027777-6287-4cef-ae28-1d28fbf147e4; _ga=GA1.3.1231677231.1504829529; _gid=GA1.3.1593827196.1504829529"
+request["Origin"] = "https://marketplace.visualstudio.com"
+request["X-Vss-Reauthenticationaction"] = "Suppress"
+request["Accept-Language"] = "zh-TW,zh;q=0.8,en-US;q=0.6,en;q=0.4,zh-CN;q=0.2"
+request["User-Agent"] = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36"
+request["Accept"] = "application/json;api-version=4.0-preview.1;excludeUrls=true"
+request["Referer"] = "https://marketplace.visualstudio.com/search?target=VSCode&category=All%20categories&sortBy=Downloads"
+request["X-Requested-With"] = "XMLHttpRequest"
+request["Connection"] = "keep-alive"
+request["X-Tfs-Session"] = "ba750018-3108-46b0-983f-8ee91452bbf5"
+request.body = JSON.dump({
+  "assetTypes" => [
+    "Microsoft.VisualStudio.Services.Icons.Default",
+    "Microsoft.VisualStudio.Services.Icons.Branding",
+    "Microsoft.VisualStudio.Services.Icons.Small"
+  ],
+  "filters" => [
+    {
+      "criteria" => [
+        {
+          "filterType" => 8,
+          "value" => "Microsoft.VisualStudio.Code"
+        },
+        {
+          "filterType" => 10,
+          "value" => 'target:"Microsoft.VisualStudio.Code" '
+        },
+        {
+          "filterType" => 12,
+          "value" => "5122"
+        }
+      ],
+      "direction" => 2,
+      "pageSize" => 54,
+      "pageNumber" => 1,
+      "sortBy" => 4,
+      "sortOrder" => 0,
+      "pagingToken" => nil
+    }
+  ],
+  "flags" => 870
+})
+
+req_options = {
+  use_ssl: uri.scheme == "https",
+}
+
+response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
+  http.request(request)
+end
+
+data = JSON.parse(response.body)['results']
+vscode = data[0]['resultMetadata'][-1]['metadataItems'][0]['count']
+
+# Atom
+
+uri = URI.parse("https://atom.io/packages")
+request = Net::HTTP::Get.new(uri)
+request["If-None-Match"] = "W/\"a378dbddda16c53006d7fe23fd41c002\""
+request["Accept-Language"] = "zh-TW,zh;q=0.8,en-US;q=0.6,en;q=0.4,zh-CN;q=0.2"
+request["Upgrade-Insecure-Requests"] = "1"
+request["User-Agent"] = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36"
+request["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"
+request["Referer"] = "https://www.google.com.tw/"
+request["Cookie"] = "_atom_io_session=SXBEYitNakdQMklMRHEzY0hGZkM1QWlLbzR4aEVrSUtQTU1mTDA3YlEvUFBGWGRUMHJ0TzVqOGpTbHN3Nnhob0M2dkFZQWlwNktzRzhaMHNhYzNDbUV3SndQckVOMHRFYTg5TWVTaEFxbzVaQVkwN3hybFhIdDBOcFc0NUp1UFhiYmpmckRYcjNuMUFZZHVOYzRMMnNWek1zem9DWkU4ZzR5cDRiMzdLTS8xcHpNOCtVTTFLVXRnOVMyckF6VmErLS13bUtzQmYzWlhVcFNGL1lFajBKNE1nPT0%3D--3e14785c842b801ac7cbc2bd74c4fd27dd274ca0; _ga=GA1.2.242116872.1504829683; _gid=GA1.2.1118011494.1504829683"
+request["Connection"] = "keep-alive"
+request["Cache-Control"] = "max-age=0"
+
+req_options = {
+  use_ssl: uri.scheme == "https",
+}
+
+response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
+  http.request(request)
+end
+
+atom = 0
+doc = Nokogiri::HTML(response.body)
+num_raw_str = doc.css('form.search-form .search-input')[0]['placeholder']
+
+num_raw_str.match(/[\d,]+/) do |m|
+  atom = m[0].gsub(/[^\d]/, '').to_i
+end
+
+puts "vscode: #{vscode}, sublime: #{sublime}, atom: #{atom}"
+
+class Stats
+  attr_accessor :stats
+
+  def initialize(vscode, sublime, atom)
+    @stats = {
+      vscode: vscode,
+      sublime: sublime,
+      atom: atom
+    }
+  end
+
+  def get_binding
+    binding()
+  end
+end
+
+stats = Stats.new(vscode, sublime, atom)
+renderer = ERB.new(File.read('template/index.html.erb'))
+
+File.write('build/index.html', renderer.result(stats.get_binding))
+
