@@ -1,21 +1,118 @@
 <html>
+  <meta charset="utf-8">
   <head>
     <title>VSCode vs Sublime vs Atom packages count</title>
-    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <style>
+      .bar {
+          fill: steelblue;
+      }
+
+      .bar:hover {
+          fill: brown;
+      }
+
+      .axis--x path {
+          display: none;
+      }
+    </style>
   </head>
-  <script>
-    var stats = {
-      "vscode": <%= @stats[:vscode] %>,
-      "sublime": <%= @stats[:sublime] %>,
-      "atom": <%= @stats[:atom] %>
-    }
-  </script>
   <body>
-    <h1>VSCode</h1>
+    <h1>Popular editor extension(package) quantity comparison chart</h1>
+    <p>Last updated at <%= @updated_at %></p>
+    <h2>VSCode</h2>
     <p><%= @stats[:vscode] %></p>
-    <h1>Sublime</h1>
+    <h2>Sublime</h2>
     <p><%= @stats[:sublime] %></p>
-    <h1>Atom</h1>
+    <h2>Atom</h2>
     <p><%= @stats[:atom] %></p>
+
+    <script>
+    var data = [
+      {
+        "name": "VSCode",
+        "count": <%= @stats[:vscode] %>
+      },
+      {
+        "name": "Sublime",
+        "count": <%= @stats[:sublime] %>
+      },
+      {
+        "name": "Atom",
+        "count": <%= @stats[:atom] %>
+      }
+    ]
+
+    var margin = {top: 20, right: 20, bottom: 70, left: 80},
+      width = 600 - margin.left - margin.right,
+      height = 300 - margin.top - margin.bottom;
+
+    try {
+
+
+    // set the ranges
+    var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+
+    var y = d3.scale.linear().range([height, 0]);
+
+    } catch (e) {
+      alert(e)
+    }
+
+    // define the axis
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom")
+
+
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left")
+        .ticks(10);
+
+
+    // add the SVG element
+    var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // scale the range of the data
+    x.domain(data.map(function(d) { return d.name; }));
+    y.domain([0, d3.max(data, function(d) { return d.count; })]);
+
+    // add axis
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis)
+      .selectAll("text")
+        .style("text-anchor", "end")
+        .attr("dx", "-.8em")
+        .attr("dy", "-.55em")
+        .attr("transform", "rotate(-90)" );
+
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis)
+      .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 5)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end")
+        .text("Count");
+
+
+    // Add bar chart
+    svg.selectAll("bar")
+        .data(data)
+      .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", function(d) { return x(d.name); })
+        .attr("width", x.rangeBand())
+        .attr("y", function(d) { return y(d.count); })
+        .attr("height", function(d) { return height - y(d.count); });
+    </script>
   </body>
 </html>

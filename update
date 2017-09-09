@@ -107,7 +107,7 @@ end
 puts "vscode: #{vscode}, sublime: #{sublime}, atom: #{atom}"
 
 class Stats
-  attr_accessor :stats
+  attr_accessor :stats, :updated_at
 
   def initialize(vscode, sublime, atom)
     @stats = {
@@ -115,6 +115,8 @@ class Stats
       sublime: sublime,
       atom: atom
     }
+
+    @updated_at = Time.now
   end
 
   def get_binding
