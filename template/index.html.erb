@@ -6,14 +6,6 @@
     <title>VSCode vs Sublime vs Atom packages count</title>
     <script src="https://d3js.org/d3.v3.min.js"></script>
     <style>
-      .bar {
-          fill: steelblue;
-      }
-
-      .bar:hover {
-          fill: brown;
-      }
-
       .axis--x path {
           display: none;
       }
@@ -33,15 +25,18 @@
     var data = [
       {
         "name": "VSCode",
-        "count": <%= @stats[:vscode] %>
+        "count": <%= @stats[:vscode] %>,
+        "color": "#037CC4"
       },
       {
         "name": "Sublime",
-        "count": <%= @stats[:sublime] %>
+        "count": <%= @stats[:sublime] %>,
+        "color": "#FDAF31"
       },
       {
         "name": "Atom",
-        "count": <%= @stats[:atom] %>
+        "count": <%= @stats[:atom] %>,
+        "color": "#51D0B9"
       }
     ]
 
@@ -82,7 +77,7 @@
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
         .call(xAxis)
-      .selectAll("text")
+        .selectAll("text")
         .style("text-anchor", "end")
         .attr("dx", "-.8em")
         .attr("dy", "-.55em")
@@ -91,7 +86,7 @@
     svg.append("g")
         .attr("class", "y axis")
         .call(yAxis)
-      .append("text")
+        .append("text")
         .attr("transform", "rotate(-90)")
         .attr("y", 5)
         .attr("dy", ".71em")
@@ -102,8 +97,9 @@
     // Add bar chart
     svg.selectAll("bar")
         .data(data)
-      .enter().append("rect")
+        .enter().append("rect")
         .attr("class", "bar")
+        .style("fill", function(d, i) { return data[i].color; })
         .attr("x", function(d) { return x(d.name); })
         .attr("width", x.rangeBand())
         .attr("y", function(d) { return y(d.count); })
