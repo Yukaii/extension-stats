@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/Yukaii/package-stats.svg?branch=master)](https://travis-ci.org/Yukaii/package-stats)
 
+![stats](./docs/images/package-stats.png)
+
 Package stats of 3 popular editor: VSCode, Sublime and Atom.
 
 ## Development
@@ -15,16 +17,16 @@ bundle install
 cd into `build` directory, start development server:
 
 ```bash
- ruby -run -e httpd . -p 3000 # Change 3000 port to whatever you like
- ```
+ruby -run -e httpd . -p 3000 # Change 3000 port to whatever you like
+```
 
- Start a another terminal, run build site command:
+Start a another terminal, run build site command:
 
  ```bash
  ./update
  ```
 
- Visit `http://localhost:3000` for result.
+Visit `http://localhost:3000` for result.
 
 ## License
 
