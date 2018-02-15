@@ -120,15 +120,15 @@ request.body = JSON.generate({
 	"files": {
 		"dashboard.yml": {
       "content": <<-STATS
-      dashboard "Package stats":
-      - h1 text: Package stats
-      - h3 text: Show VSCode, SublimeText, Atom editors extension stats
-      - p text: Last updated at #{Time.now}
-      - bar chart:
-          columns: [
-            ["VSCode", #{vscode}], ["Sublime Text", #{sublime}], ["Atom", #{atom}]
-          ]
-      STATS
+dashboard "Package stats":
+- h1 text: Package stats
+- h3 text: Show VSCode, SublimeText, Atom editors extension stats
+- p text: Last updated at #{Time.now}
+- bar chart:
+    columns: [
+      ["VSCode", #{vscode}], ["Sublime Text", #{sublime}], ["Atom", #{atom}]
+    ]
+STATS
 		}
 	}
 })
