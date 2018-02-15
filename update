@@ -1,13 +1,14 @@
 #! /usr/bin/env ruby
 
 require 'bundler/setup'
-
+require 'dotenv'
 require 'nokogiri'
 require 'faraday'
 require 'net/http'
 require 'uri'
 require 'json'
-require 'erb'
+
+Dotenv.load
 
 # Sublime
 body = Faraday.new('https://packagecontrol.io/stats').get().body
@@ -106,26 +107,30 @@ end
 
 puts "vscode: #{vscode}, sublime: #{sublime}, atom: #{atom}"
 
-class Stats
-  attr_accessor :stats, :updated_at
+url = URI("https://api.github.com/gists/#{ENV['GIST_ID']}")
 
-  def initialize(vscode, sublime, atom)
-    @stats = {
-      vscode: vscode,
-      sublime: sublime,
-      atom: atom
-    }
+http = Net::HTTP.new(url.host, url.port)
+http.use_ssl = true
+http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
-    @updated_at = Time.now
-  end
+request = Net::HTTP::Patch.new(url)
+request["authorization"] = "token #{ENV['GIST_TOKEN']}"
+request["content-type"] = 'application/json'
+request.body = JSON.generate({
+	"files": {
+		"dashboard.yml": {
+      "content": <<-STATS
+      dashboard "Package stats":
+      - h1 text: Package stats
+      - h3 text: Show VSCode, SublimeText, Atom editors extension stats
+      - p text: Last updated at #{Time.now}
+      - bar chart:
+          columns: [
+            ["VSCode", #{vscode}], ["Sublime Text", #{sublime}], ["Atom", #{atom}]
+          ]
+      STATS
+		}
+	}
+})
 
-  def get_binding
-    binding()
-  end
-end
-
-stats = Stats.new(vscode, sublime, atom)
-renderer = ERB.new(File.read('template/index.html.erb'))
-
-File.write('build/index.html', renderer.result(stats.get_binding))
-
+response = http.request(request)

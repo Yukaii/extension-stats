@@ -1,19 +1,21 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    faraday (0.13.1)
+    dotenv (2.2.1)
+    faraday (0.14.0)
       multipart-post (>= 1.2, < 3)
-    mini_portile2 (2.2.0)
+    mini_portile2 (2.3.0)
     multipart-post (2.0.0)
-    nokogiri (1.8.0)
-      mini_portile2 (~> 2.2.0)
+    nokogiri (1.8.2)
+      mini_portile2 (~> 2.3.0)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  dotenv
   faraday
   nokogiri
 
 BUNDLED WITH
-   1.15.4
+   1.16.1
