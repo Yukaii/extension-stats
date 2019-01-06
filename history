@@ -1,0 +1,113 @@
+#! /usr/bin/env ruby
+
+require 'tmpdir'
+require 'fileutils'
+require 'dotenv'
+require 'git'
+require 'yaml'
+require 'json'
+require 'net/http'
+require 'uri'
+
+Dotenv.load
+
+dir = Dir.mktmpdir
+url = "https://gist.github.com/#{ENV['GIST_ID']}.git"
+g = Git.clone(url, 'package-stats', path: dir)
+
+commit_obj = {}
+commits_sha = []
+
+g.log(10000).since('2018-02-15T12:00:00-08:00').each do |c|
+  date = c.date
+  day_str = "#{date.year}-#{date.month}-#{date.day}"
+  raw_yaml_str = g.show(c.sha, 'dashboard.yml')
+  data = YAML.load(raw_yaml_str)
+  commit_obj[c.sha] = {
+    date: day_str,
+    data: data
+  }
+  commits_sha.push(c.sha)
+end
+
+vscode_history = []
+sublime_history = []
+atom_history = []
+date_history = []
+
+commits_sha.reverse.each do |sha|
+  commit = commit_obj[sha]
+  columns = commit[:data]['dashboard "Package stats"'][-1]['bar chart']['columns']
+  vscode_history.push(columns[0][1])
+  sublime_history.push(columns[1][1])
+  atom_history.push(columns[2][1])
+  date_history.push(commit[:date])
+end
+
+
+out = {
+  "component": "root",
+  "args": {
+    "title": "Extension history stats"
+  },
+  "data": [
+    {
+      "component": "text",
+      "args": {
+        "tagName": "h1"
+      },
+      "data": "Package stats"
+    },
+    {
+      "component": "text",
+      "args": {
+        "tagName": "h3"
+      },
+      "data": "Show VSCode, SublimeText, Atom editors extension stats"
+    },
+    {
+      "component": "chart",
+      "args": {
+        "axis": {
+          "x": {
+            "label": "Date",
+            "type": "timeseries",
+            "tick": {
+              "format": "%Y-%m-%d"
+            }
+          },
+          "y": {
+            "label": "Extension count"
+          }
+        },
+        "type": "line",
+        "stacked": false
+      },
+      "data": {
+        "x": "x",
+        "xFormat": "%Y-%m-%d",
+        "columns": [
+          ["x"] + date_history,
+          ["VSCode"] + vscode_history,
+          ["Sublime Text"] + sublime_history,
+          ["Atom"] + atom_history
+        ]
+      }
+    }
+  ]
+}
+
+url = URI("https://api.github.com/gists/#{ENV['HISTORY_GIST_ID']}")
+
+http = Net::HTTP.new(url.host, url.port)
+http.use_ssl = true
+http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+
+request = Net::HTTP::Patch.new(url)
+request["authorization"] = "token #{ENV['GIST_TOKEN']}"
+request["content-type"] = 'application/json'
+request.body = JSON.generate({
+	"files": {
+    "dashboard.json": JSON.pretty_generate(out)
+  }
+})
