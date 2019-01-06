@@ -1,5 +1,7 @@
 #! /usr/bin/env ruby
 
+require 'bundler/setup'
+require 'openssl'
 require 'tmpdir'
 require 'fileutils'
 require 'dotenv'
