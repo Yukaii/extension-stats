@@ -15,7 +15,7 @@ Dotenv.load
 
 dir = Dir.mktmpdir
 url = "https://gist.github.com/#{ENV['GIST_ID']}.git"
-g = Git.clone(url, 'package-stats', path: dir)
+g = Git.clone(url, 'extension-stats', path: dir)
 
 commit_obj = {}
 commits_sha = []
@@ -58,7 +58,7 @@ out = {
       "args": {
         "tagName": "h1"
       },
-      "data": "Package stats"
+      "data": "Extension stats"
     },
     {
       "component": "text",
