@@ -110,7 +110,9 @@ request["authorization"] = "token #{ENV['GIST_TOKEN']}"
 request["content-type"] = 'application/json'
 request.body = JSON.generate({
 	"files": {
-    "dashboard.json": JSON.pretty_generate(out)
+    "dashboard.json": {
+      content: JSON.pretty_generate(out)
+    }
   }
 })
 
