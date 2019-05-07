@@ -73,7 +73,7 @@ response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
 end
 
 data = JSON.parse(response.body)['results']
-vscode = data[0]['resultMetadata'][-1]['metadataItems'][0]['count']
+vscode = data[0]['resultMetadata'].find{ |d| d['metadataType'] == 'ResultCount' }['metadataItems'][0]['count']
 
 # Atom
 
