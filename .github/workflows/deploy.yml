@@ -19,6 +19,10 @@ jobs:
     strategy:
       matrix:
         ruby-version: ['3.0']
+    env:
+      HISTORY_GIST_ID: ${{ secrets.HISTORY_GIST_ID }}
+      GIST_ID: ${{ secrets.GIST_ID }}
+      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
 
     steps:
     - uses: actions/checkout@v2
