@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby-version: ['2.8']
+        ruby-version: ['2.7.2']
     env:
       HISTORY_GIST_ID: ${{ secrets.HISTORY_GIST_ID }}
       GIST_ID: ${{ secrets.GIST_ID }}
